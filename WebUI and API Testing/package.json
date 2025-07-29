@@ -1,0 +1,15 @@
+{
+  "name": "webui-and-api-testing",
+  "version": "1.0.0",
+  "description": "Web and API Testing",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Muhammad Atif",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^14.5.3",
+    "cypress-xpath": "^2.0.1"
+  }
+}

@@ -1,0 +1,320 @@
+{
+	"info": {
+		"_postman_id": "530a0efc-9f6e-4e67-bd1d-40442eea5bfb",
+		"name": "API Automation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29888555"
+	},
+	"item": [
+		{
+			"name": "LoginApi",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const useValid = pm.environment.get(\"useValid\") === \"true\";\r",
+							"\r",
+							"let payload = useValid\r",
+							"  ? { username: \"emilys\", password: \"emilyspass\" }\r",
+							"  : { username: \"wrong\", password: \"invalid\" };\r",
+							"\r",
+							"pm.request.body.raw = JSON.stringify(payload);\r",
+							"const responseCode = pm.response.code;\r",
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"// Check if credentials are valid (positive case)\r",
+							"if (responseCode === 200) {\r",
+							"  pm.test(\"Login successful - Token received\", () => {\r",
+							"    pm.expect(jsonData).to.have.property(\"accessToken\");\r",
+							"  });\r",
+							"  pm.environment.set(\"authToken\", jsonData.accessToken);\r",
+							"}\r",
+							"\r",
+							"// Check if credentials are invalid (negative case)\r",
+							"if (responseCode === 400) {\r",
+							"  pm.test(\"Login failed - Invalid credentials\", () => {\r",
+							"    pm.expect(jsonData.message || jsonData.error).to.include(\"Invalid credentials\");\r",
+							"  });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"emilys\",\r\n  \"password\": \"emilyspass\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/auth/login",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Users",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Get users data\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"    pm.expect(pm.response.json().users.length).to.be.above(0);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Authorization: Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/users",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Product created\", () => {\r",
+							"  let res = pm.response.json();\r",
+							"  pm.expect(pm.response.code).to.eql(201);\r",
+							"  pm.environment.set(\"productId\", res.id);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Authorization: Bearer {{authToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": " application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "{",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "\"title\"",
+							"value": " \"Postman Test Product\",",
+							"type": "text"
+						},
+						{
+							"key": "\"price\"",
+							"value": " 99",
+							"type": "text"
+						},
+						{
+							"key": "}",
+							"value": "",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseURL}}/product/add",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"product",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Price",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Product Updated\", () => {\r",
+							"  let res = pm.response.json();\r",
+							"  pm.expect(res.price).to.eql(89);\r",
+							"  pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"price\": 89\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/products/1",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"products",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Price Negative Tests",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Update non existing product\", () => {\r",
+							"  let res = pm.response.json();\r",
+							"  pm.expect(res.message).to.eql(\"Product with id '2000' not found\");\r",
+							"  pm.expect(pm.response.code).to.eql(404);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{authToken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"price\": 89\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/products/2000",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"products",
+						"2000"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Product Updated\", () => {\r",
+							"  let res = pm.response.json();\r",
+							"  pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseURL}}/products/10",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"products",
+						"10"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
